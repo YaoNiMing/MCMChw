@@ -1,0 +1,129 @@
+
+Let $\chi = \mathbb{R}$, and let $\pi(x)=cg(x)$, where $g(x)=e^{-|x|/10}(1+\cos(x)\sin(x))$, and let $h(x)=x+x^2$. With appropriate choise of $M,B, \sigma$, and starting distribution $\mathcal{L}(X_0)$, estimate $\mathbb{E}_\pi(h)$ in each of the two different ways:
+(a) With a usual random-walk Metropolis algorithm for $\pi$, with the usual proposal distribution $Y_n$~$N(X_{n-1},\sigma^2)$.
+For this problem, we choose again $M$ to be 10e+6 and $B$ to be 10e+5, and we choose $\sigma$ to be 53 so that the acceptance rate is around the optimal value 0.234.
+The RWM algorithm is implemented using the following code:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Estimate E_pi(X+X^2) where pi=cg using RWM algorithm where}
+\hlcom{# g(x) = e^(-|x|/10)*(1+cos(x)sin(x^3))}
+\hlcom{# with increments following a N(0,sigma^2) distribution}
+
+\hlstd{fn} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{x}\hlopt{+}\hlstd{x}\hlopt{^}\hlnum{2}\hlstd{\}}
+\hlstd{g} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}\hlkwd{exp}\hlstd{(}\hlopt{-}\hlkwd{abs}\hlstd{(x)}\hlopt{/}\hlnum{10}\hlstd{)}\hlopt{*}\hlstd{(}\hlnum{1}\hlopt{+}\hlkwd{cos}\hlstd{(x)}\hlopt{*}\hlkwd{sin}\hlstd{(x}\hlopt{^}\hlnum{3}\hlstd{))\}}
+
+\hlstd{sigma} \hlkwb{=} \hlnum{53}
+\hlstd{M} \hlkwb{=} \hlnum{1e+6}
+\hlstd{B} \hlkwb{=} \hlnum{1e+5}
+
+\hlcom{#initialization}
+\hlstd{fnlist} \hlkwb{=} \hlkwd{numeric}\hlstd{(M}\hlopt{+}\hlstd{B)}
+\hlstd{xlist} \hlkwb{=} \hlkwd{numeric}\hlstd{(M}\hlopt{+}\hlstd{B)}
+\hlstd{x} \hlkwb{=} \hlkwd{rnorm}\hlstd{(}\hlnum{1}\hlstd{,sigma)}
+\hlstd{acc} \hlkwb{=} \hlnum{0}
+
+\hlkwa{for} \hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)) \{}
+  \hlstd{eps} \hlkwb{=} \hlkwd{rnorm}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{0}\hlstd{,sigma)}
+
+  \hlkwa{if} \hlstd{(}\hlkwd{runif}\hlstd{(}\hlnum{1}\hlstd{)}\hlopt{<=}\hlkwd{g}\hlstd{(x}\hlopt{+}\hlstd{eps)}\hlopt{/}\hlkwd{g}\hlstd{(x)) \{}
+    \hlkwa{if} \hlstd{(i}\hlopt{>}\hlstd{B)}
+      \hlstd{acc}\hlkwb{=}\hlstd{acc}\hlopt{+}\hlnum{1}
+    \hlstd{x} \hlkwb{=} \hlstd{x}\hlopt{+}\hlstd{eps}
+  \hlstd{\}}
+  \hlstd{xlist[i]} \hlkwb{=} \hlstd{x}
+  \hlstd{fnlist[i]} \hlkwb{=} \hlkwd{fn}\hlstd{(x)}
+\hlstd{\}}
+
+\hlstd{funcmean} \hlkwb{=} \hlkwd{mean}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)])}
+\hlstd{funciidse} \hlkwb{=} \hlkwd{sd}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)])}\hlopt{/}\hlkwd{sqrt}\hlstd{(M)}
+\hlstd{acf_k} \hlkwb{=} \hlkwd{acf}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)],}\hlkwc{lag.max} \hlstd{=} \hlnum{1000}\hlstd{,}\hlkwc{plot} \hlstd{=} \hlnum{FALSE}\hlstd{)}\hlopt{$}\hlstd{acf}
+\hlstd{varfact} \hlkwb{=} \hlnum{2}\hlopt{*}\hlkwd{sum}\hlstd{(acf_k[}\hlnum{1}\hlopt{:}\hlkwd{min}\hlstd{(}\hlkwd{which}\hlstd{(acf_k}\hlopt{<}\hlnum{0.05}\hlstd{))])}\hlopt{-}\hlnum{1}
+\hlstd{funcse} \hlkwb{=} \hlstd{funciidse}\hlopt{*}\hlkwd{sqrt}\hlstd{(varfact)}
+\hlstd{accrate} \hlkwb{=} \hlstd{acc}\hlopt{/}\hlstd{M}
+
+\hlkwd{cat}\hlstd{(}\hlstr{'B = '}\hlstd{,B,}\hlstr{', M = '}\hlstd{,M,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Number of samples accepted = '}\hlstd{,acc,}\hlstr{', acceptance rate = '}\hlstd{,accrate,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Estimate = '}\hlstd{,funcmean,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'i.i.d. standard error = '}\hlstd{,funciidse,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'varfact = '}\hlstd{,varfact,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Standard error = '}\hlstd{,funcse,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Output of several runs:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+## B =  1e+05 , M =  1e+06 
+## Number of samples accepted =  237262 , acceptance rate =  0.237262 
+## Estimate =  200.0755 
+## i.i.d. standard error =  0.4482376 
+## varfact =  6.792203 
+## Standard error =  1.16819
+## B =  1e+05 , M =  1e+06 
+## Number of samples accepted =  237332 , acceptance rate =  0.237332 
+## Estimate =  198.393 
+## i.i.d. standard error =  0.4473382 
+## varfact =  6.824448 
+## Standard error =  1.16861
+## B =  1e+05 , M =  1e+06 
+## Number of samples accepted =  237437 , acceptance rate =  0.237437 
+## Estimate =  201.4081 
+## i.i.d. standard error =  0.4538848 
+## varfact =  6.972828 
+## Standard error =  1.198533
+## B =  1e+05 , M =  1e+06 
+## Number of samples accepted =  237164 , acceptance rate =  0.237164 
+## Estimate =  198.8138 
+## i.i.d. standard error =  0.4402327 
+## varfact =  6.734862 
+## Standard error =  1.142475
+## B =  1e+05 , M =  1e+06 
+## Number of samples accepted =  236834 , acceptance rate =  0.236834 
+## Estimate =  199.177 
+## i.i.d. standard error =  0.447158 
+## varfact =  6.940802 
+## Standard error =  1.178056
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+The tabulated result is as follows:\\
+\begin{center}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{tabular}{r|r|r|r|r}
+\hline
+estimation & acc\_rate & seiid & varfact & standard\_error\\
+\hline
+200.0755 & 0.237262 & 0.4482376 & 6.940802 & 1.168190\\
+\hline
+198.3930 & 0.237332 & 0.4473382 & 6.940802 & 1.168610\\
+\hline
+201.4081 & 0.237437 & 0.4538848 & 6.940802 & 1.198533\\
+\hline
+198.8138 & 0.237164 & 0.4402327 & 6.940802 & 1.142475\\
+\hline
+199.1770 & 0.236834 & 0.4471580 & 6.940802 & 1.178056\\
+\hline
+\end{tabular}
+
+
+\end{knitrout}
+\end{center}
+We notice that the varfact values are quite small, indicating that the samples are not strongly correlated. To verify the effectiveness of the sampler, here we plot the value of $x$ after the burn-in stage
+\begin{figure}[H]
+  \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(xlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(B}\hlopt{+}\hlstd{M)],}\hlkwc{type}\hlstd{=}\hlstr{'l'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-4-1} 
+
+\end{knitrout}
+		\caption{$x$ values of RWM algorithm after burning-in}
+\end{figure}
+From the figure above, we can see that the sample is reasonably well represented because of the high variability and low correlation, indicating a good (accurate) approximation by the RWM algorithm.\\
+

@@ -1,0 +1,64 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp8a.R')
+@
+Let $\chi = \mathbb{R}$, and let $\pi(x)=cg(x)$, where $g(x)=e^{-|x|/10}(1+\cos(x)\sin(x))$, and let $h(x)=x+x^2$. With appropriate choise of $M,B, \sigma$, and starting distribution $\mathcal{L}(X_0)$, estimate $\mathbb{E}_\pi(h)$ in each of the two different ways:
+(a) With a usual random-walk Metropolis algorithm for $\pi$, with the usual proposal distribution $Y_n$~$N(X_{n-1},\sigma^2)$.
+For this problem, we choose again $M$ to be 10e+6 and $B$ to be 10e+5, and we choose $\sigma$ to be 53 so that the acceptance rate is around the optimal value 0.234.
+The RWM algorithm is implemented using the following code:
+<<hwp8a,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+acc_rate <-numeric(5)
+estimation <- numeric(5)
+seiid <- numeric(5)
+varfact_r <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp8a.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+acc_rate[1] <- accrate
+seiid[1] <- funciidse
+varfact_r[1] <- varfact
+source('Rcode/hwp8a.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+acc_rate[2] <- accrate
+seiid[2] <- funciidse
+varfact_r[2] <- varfact
+source('Rcode/hwp8a.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+acc_rate[3] <- accrate
+seiid[3] <- funciidse
+varfact_r[3] <- varfact
+source('Rcode/hwp8a.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+acc_rate[4] <- accrate
+seiid[4] <- funciidse
+varfact_r[4] <- varfact
+source('Rcode/hwp8a.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+acc_rate[5] <- accrate
+seiid[5] <- funciidse
+varfact_r[5] <- varfact
+meanse <- data.frame(estimation,acc_rate,seiid,varfact,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+We notice that the varfact values are quite small, indicating that the samples are not strongly correlated. To verify the effectiveness of the sampler, here we plot the value of $x$ after the burn-in stage
+\begin{figure}[H]
+  \centering
+<<p8aplot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+xlist8a = xlist
+plot(xlist8a[(B+1):(B+M)],type='l')
+@
+		\caption{$x$ values of RWM algorithm after burning-in}
+\end{figure}
+From the figure above, we can see that the sample is reasonably well represented because of the high variability and low correlation, indicating a good (accurate) approximation by the RWM algorithm.\\

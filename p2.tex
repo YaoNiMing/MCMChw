@@ -1,0 +1,92 @@
+
+Re-write the integral
+$$I:=\int_1^\infty\left(\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\,dy \right)\,dx$$
+as some expected value, and then estimate $I$ using Monte Carlo algorithm.\\
+\\
+The interval of integration of $x$ is from $1$ to $\infty$, so we choose $x$ to follow a shifted exponential distribution, i.e. $x-1$ follows a exponential($\lambda$) distribution, and the value of $\lambda$ is set to $1$, by trial and error to minimize standard error. The interval of integration of $y$ is $-\infty$ to $\infty$, so we can choose $y$ to follow a Normal$(0,\sigma^2)$ distribution, and the value $\sigma$ is also found to be 1 by methods of trial and error. 
+Now, we can write the integral as
+\begin{align*}
+I:&=\int_1^\infty\left(\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\,dy \right)\,dx\\
+  &=\int_1^\infty\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,dx\\
+  &=\int_1^\infty\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\frac{1}{}e^{(x-1)}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,\left( e^{-(x-1)}dx\right)\\
+  &=\int_0^\infty\int_{-\infty}^\infty(1+(x+1)^2+\sin(x+1))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\frac{1}{}e^{ x}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,\left( e^{- x}dx\right)\\
+  &=\mathbb{E}\left[{\sqrt{2\pi}}(X^2+2X+2+\sin(X+1))^{-|Y|^3-2}\exp\{\frac{Y^2}{2}+X\}\right],
+\end{align*}
+where $X$ follows a Exponential($1$) distribution and $Y$ follows a Normal($0,1$) distribution.
+
+Source code:\\
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Estimate E[(sigma(2pi)^0.5\textbackslash{}lambda)(X^2+2X+2+sin(X+1))^(-|Y|^3-2)exp(Y^2/2sigma^2+X)]}
+\hlcom{#where X~Exp(lambda) and Y~normal(0,sigma^2) and are independent}
+\hlstd{sigma} \hlkwb{=} \hlnum{1}
+\hlstd{lambda} \hlkwb{=} \hlnum{1}
+\hlstd{fn} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,}\hlkwc{y}\hlstd{)}
+  \hlstd{\{sigma}\hlopt{/}\hlstd{lambda}\hlopt{*}\hlkwd{sqrt}\hlstd{(}\hlnum{2}\hlopt{*}\hlstd{pi)}\hlopt{*}\hlstd{(x}\hlopt{^}\hlnum{2}\hlopt{+}\hlnum{2}\hlopt{*}\hlstd{x}\hlopt{+}\hlnum{2}\hlopt{+}\hlkwd{sin}\hlstd{(x}\hlopt{+}\hlnum{1}\hlstd{))}\hlopt{^}\hlstd{(}\hlopt{-}\hlnum{2}\hlopt{-}\hlstd{(}\hlkwd{abs}\hlstd{(y))}\hlopt{^}\hlnum{3}\hlstd{)}\hlopt{*}\hlkwd{exp}\hlstd{(y}\hlopt{^}\hlnum{2}\hlopt{/}\hlnum{2}\hlopt{/}\hlstd{sigma}\hlopt{^}\hlnum{2}\hlopt{+}\hlstd{x)\}}
+
+\hlcom{#number of cases}
+\hlstd{M}\hlkwb{=}\hlnum{10}\hlopt{^}\hlnum{6}
+
+\hlstd{xlist} \hlkwb{=} \hlkwd{rexp}\hlstd{(M,}\hlnum{1}\hlopt{/}\hlstd{lambda)}
+\hlstd{ylist} \hlkwb{=} \hlkwd{rnorm}\hlstd{(M,}\hlnum{0}\hlstd{,sigma)}
+\hlstd{funclist} \hlkwb{=} \hlkwd{fn}\hlstd{(xlist,ylist)}
+\hlstd{funcmean} \hlkwb{=} \hlkwd{mean}\hlstd{(funclist)}
+\hlstd{funcse} \hlkwb{=} \hlkwd{sd}\hlstd{(funclist)}\hlopt{/}\hlkwd{sqrt}\hlstd{(M)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Using Monte Carlo Integration methods with \textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'M = '}\hlstd{,M,}\hlstr{', sigma = '}\hlstd{,sigma,}\hlstr{', lambda = '}\hlstd{,lambda,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'estimate = '}\hlstd{,funcmean,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'standard error = '}\hlstd{,funcse,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Output of several runs:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+## Using Monte Carlo Integration methods with 
+## M =  1e+06 , sigma =  1 , lambda =  1 
+## estimate =  0.1393809 
+## standard error =  0.0001244963
+## Using Monte Carlo Integration methods with 
+## M =  1e+06 , sigma =  1 , lambda =  1 
+## estimate =  0.1396676 
+## standard error =  0.0001337729
+## Using Monte Carlo Integration methods with 
+## M =  1e+06 , sigma =  1 , lambda =  1 
+## estimate =  0.1395552 
+## standard error =  0.0001363247
+## Using Monte Carlo Integration methods with 
+## M =  1e+06 , sigma =  1 , lambda =  1 
+## estimate =  0.1398393 
+## standard error =  0.0001878718
+## Using Monte Carlo Integration methods with 
+## M =  1e+06 , sigma =  1 , lambda =  1 
+## estimate =  0.1395777 
+## standard error =  0.0001148437
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+The tabulated result is as follows:\\
+\center
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{tabular}{r|r}
+\hline
+estimation & standard\_error\\
+\hline
+0.1393809 & 0.0001245\\
+\hline
+0.1396676 & 0.0001338\\
+\hline
+0.1395552 & 0.0001363\\
+\hline
+0.1398393 & 0.0001879\\
+\hline
+0.1395777 & 0.0001148\\
+\hline
+\end{tabular}
+
+
+\end{knitrout}
+The integral is estimated to be 0.140 with standard error of approximately 0.000 with Monte Carlo methods. The results from the five runs are quite consistent. The number of samples taken for the estimation is set to be $\ensuremath{10^{6}}$, as this number gives consistent results with reasonable computation power (runs within 1 second). 

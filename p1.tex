@@ -1,0 +1,74 @@
+
+Write and run a computer program to compute a Monte Carlo (including standard errors) of $\mathbb{E}((Y+Z)/(1+|Z|))$, where $Y~$ Exponential(3) and $Z~$ Normal(0,1) are independent.\\
+Source code:\\
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~normal(0,1) and are independent}
+\hlstd{fn} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{y}\hlstd{,}\hlkwc{z}\hlstd{) \{(y}\hlopt{+}\hlstd{z)}\hlopt{/}\hlstd{(}\hlnum{1}\hlopt{+}\hlkwd{abs}\hlstd{(z))\}}
+
+\hlcom{#number of cases}
+\hlstd{M}\hlkwb{=}\hlnum{10}\hlopt{^}\hlnum{6}
+
+\hlstd{ylist} \hlkwb{=} \hlkwd{rexp}\hlstd{(M,}\hlnum{3}\hlstd{)}
+\hlstd{zlist} \hlkwb{=} \hlkwd{rnorm}\hlstd{(M)}
+\hlstd{funclist} \hlkwb{=} \hlkwd{fn}\hlstd{(ylist,zlist)}
+\hlstd{funcmean} \hlkwb{=} \hlkwd{mean}\hlstd{(funclist)}
+\hlstd{funcse} \hlkwb{=} \hlkwd{sd}\hlstd{(funclist)}\hlopt{/}\hlkwd{sqrt}\hlstd{(M)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'M = '}\hlstd{,M,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'estimate = '}\hlstd{,funcmean,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwd{cat}\hlstd{(}\hlstr{'standard error = '}\hlstd{,funcse,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Output of several runs:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+## Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)
+## M =  1e+06 
+## estimate =  0.2054176 
+## standard error =  0.0004825309
+## Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)
+## M =  1e+06 
+## estimate =  0.2056342 
+## standard error =  0.0004829007
+## Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)
+## M =  1e+06 
+## estimate =  0.2047581 
+## standard error =  0.0004828433
+## Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)
+## M =  1e+06 
+## estimate =  0.2045917 
+## standard error =  0.0004823873
+## Estimate E((Y+Z)/(1+|Z|)) where Y~Exp(3) and Z~Normal(0,1)
+## M =  1e+06 
+## estimate =  0.2043318 
+## standard error =  0.0004820518
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+The tabulated result is as follows:\\
+\center
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{tabular}{r|r}
+\hline
+estimation & standard\_error\\
+\hline
+0.2054176 & 0.0004825\\
+\hline
+0.2056342 & 0.0004829\\
+\hline
+0.2047581 & 0.0004828\\
+\hline
+0.2045917 & 0.0004824\\
+\hline
+0.2043318 & 0.0004821\\
+\hline
+\end{tabular}
+
+
+\end{knitrout}
+The estimated value for $\mathbb{E}((Y+Z)/(1+|Z|))$ is 0.205 with standard error of approximately \ensuremath{4.8\times 10^{-4}}. The results from the five runs are quite consistent. The number of samples taken for the estimation is set to be $10^6$, as this number gives consistent results with reasonable computation power (runs within 1 second). 

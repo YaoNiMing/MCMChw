@@ -1,0 +1,50 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp2.R')
+@
+Re-write the integral
+$$I:=\int_1^\infty\left(\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\,dy \right)\,dx$$
+as some expected value, and then estimate $I$ using Monte Carlo algorithm.\\
+\\
+The interval of integration of $x$ is from $1$ to $\infty$, so we choose $x$ to follow a shifted exponential distribution, i.e. $x-1$ follows a exponential($\lambda$) distribution, and the value of $\lambda$ is set to $1$, by trial and error to minimize standard error. The interval of integration of $y$ is $-\infty$ to $\infty$, so we can choose $y$ to follow a Normal$(0,\sigma^2)$ distribution, and the value $\sigma$ is also found to be 1 by methods of trial and error. 
+Now, we can write the integral as
+\begin{align*}
+I:&=\int_1^\infty\left(\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\,dy \right)\,dx\\
+  &=\int_1^\infty\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,dx\\
+  &=\int_1^\infty\int_{-\infty}^\infty(1+x^2+\sin(x))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\frac{1}{}e^{(x-1)}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,\left( e^{-(x-1)}dx\right)\\
+  &=\int_0^\infty\int_{-\infty}^\infty(1+(x+1)^2+\sin(x+1))^{-|y|^3-2}\sqrt{2\pi}e^{\frac{y^2}{2}}\frac{1}{}e^{ x}\,\left(\frac{1}{\sqrt{2\pi}}e^{-\frac{y^2}{2}}dy\right) \,\left( e^{- x}dx\right)\\
+  &=\mathbb{E}\left[{\sqrt{2\pi}}(X^2+2X+2+\sin(X+1))^{-|Y|^3-2}\exp\{\frac{Y^2}{2}+X\}\right],
+\end{align*}
+where $X$ follows a Exponential($1$) distribution and $Y$ follows a Normal($0,1$) distribution.
+
+Source code:\\
+<<hwp2,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+estimation <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp2.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+source('Rcode/hwp2.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+source('Rcode/hwp2.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+source('Rcode/hwp2.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+source('Rcode/hwp2.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+meanse <- data.frame(estimation,standard_error)
+avgmean <- sprintf("%.3f",mean(estimation))
+avgse <- sprintf("%.3f",mean(standard_error))
+@
+The tabulated result is as follows:\\
+\center
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+The integral is estimated to be \Sexpr{avgmean} with standard error of approximately \Sexpr{avgse} with Monte Carlo methods. The results from the five runs are quite consistent. The number of samples taken for the estimation is set to be $\Sexpr{M}$, as this number gives consistent results with reasonable computation power (runs within 1 second). 

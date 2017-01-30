@@ -1,0 +1,35 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp4.R')
+@
+Write and run a computer program to estimate $\mathbb{E}_\pi[(X_1-X_2)/(1+X_3+X_4X_5)]$by importance sampler with the above $f$. Discuss the extent to which this algorithm works well.\\
+First write the expectation under the original distribution in terms of an expectation under $f$, and write $x=(x_1,x_2,x_3,x_4,x_5)$ below
+\begin{align*}
+\mathbb{E}_\pi\left[\frac{X_1-X_2}{1+X_3+X_4X_5}\right]&=\int \frac{x_1-x_2}{1+x_3+x_4x_5} \pi(x)\,dx\\
+  &=\int \frac{\frac{x_1-x_2}{1+x_3+x_4x_5} \frac{g(x)}{f(x)}f(x)\,dx}{\frac{g(x)}{f(x)}f(x)\,dx}\\
+  &=\frac{\mathbb{E}_f[\frac{x_1-x_2}{1+x_3+x_4x_5} \frac{g(x)}{f(x)}]}{\mathbb{E}_f[\frac{g(x)}{f(x)}]}\\
+  &\approx\frac{\frac{1}{M}\sum_{i=1}^M\left(\frac{x_1^{(i)}-x_2^{(i)}}{1+x_3^{(i)}+x_4^{(i)}x_5^{(i)}} \frac{g(x^{(i)})}{f(x^{(i)})}\right)}{\frac{1}{M}\sum_{i=1}^M\left(\frac{g(x^{(i)})}{f(x^{(i)})}\right)}\\
+  &=\frac{\sum_{i=1}^M\left(\frac{x_1^{(i)}-x_2^{(i)}}{1+x_3^{(i)}+x_4^{(i)}x_5^{(i)}} \frac{g(x^{(i)})}{f(x^{(i)})}\right)}{\sum_{i=1}^M\left(\frac{g(x^{(i)})}{f(x^{(i)})}\right)}
+\end{align*}
+Since for all points sampled under $f$, $f(x_1,x_2,x_3,x_4,x_5)=\frac{1}{32}$, 
+\begin{align*}
+\mathbb{E}_\pi\left[\frac{X_1-X_2}{1+X_3+X_4X_5}\right]=\frac{\sum_{i=1}^M\left(\frac{x_1^{(i)}-x_2^{(i)}}{1+x_3^{(i)}+x_4^{(i)}x_5^{(i)}} 32g(x^{(i)})\right)}{\sum_{i=1}^M\left(32g(x^{(i)})\right)}=\frac{\sum_{i=1}^M\left(\frac{x_1^{(i)}-x_2^{(i)}}{1+x_3^{(i)}+x_4^{(i)}x_5^{(i)}} g(x^{(i)})\right)}{\sum_{i=1}^M\left(g(x^{(i)})\right)}
+\end{align*}
+Notice that the importance sampling algorithm reduces to evaluating the expectation with integration, since $f$ is constant. \\
+Also, because we are using importance sampling, we can not get an estimated of the standard error from a single run. So we estimate the standard error using results from multiple (10) runs.\\
+
+Source code:
+<<hwp4,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+source('Rcode/hwp4.R')
+@
+The tabulated result is as follows:\\
+\begin{center}
+\begin{tabular}{c c c c c }
+\Sexpr{estlist[1]} & \Sexpr{estlist[2]} & \Sexpr{estlist[3]} & \Sexpr{estlist[4]} & \Sexpr{estlist[5]} \\
+\Sexpr{estlist[6]} & \Sexpr{estlist[7]} & \Sexpr{estlist[8]} & \Sexpr{estlist[9]} & \Sexpr{estlist[10]} 
+\end{tabular}
+\end{center}
+The mean of all estimates is \Sexpr{mean(estlist)} with standard error \Sexpr{sd(estlist)}.\\
+The algorithm works reasonably well because using importance sampling, we can easily pick samples from a much easier distribution. The result seems to be strong as well as the estimates across different runs are fairly consistent and the standard error is small.

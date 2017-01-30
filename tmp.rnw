@@ -1,0 +1,3 @@
+<<p9bplot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+  plot(fnlist[(B+1):(B+M)],type='l')
+@

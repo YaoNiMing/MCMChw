@@ -1,0 +1,222 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp9a.R')
+@
+Consider the standard variance component model described in lecture, with $K=6$, $J_i=5$ and $\{Y_{ij}\}$ the famous "dyestuff" date, with prior values $a_1=a_2=a_3=b_1=b_2=b_3=100$. Estimate the posterior mean of $W/V$, in each of the three ways:\\
+(a) With a random-walk Metropolis algorithm.
+Since we are dealing with likelihood functions, we need to compute things in log-scale. The ratio of distributions becomes $$\log\left(\frac{g(Y)}{g(X)}\right) = \log g(Y)-\log g(X)$$
+The initial $\theta_i$ values are reasonably assumed to follow a normal distribution centered at sample mean of $Y_{ij}$ with $V,W$ equal to the sample variance of $Y_{ij}$. \\
+The RWM algorithm is implemented as follows:
+<<hwp9a,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+acc_rate <-numeric(5)
+estimation <- numeric(5)
+seiid <- numeric(5)
+varfact_r <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp9a.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+acc_rate[1] <- accrate
+seiid[1] <- funciidse
+varfact_r[1] <- varfact
+source('Rcode/hwp9a.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+acc_rate[2] <- accrate
+seiid[2] <- funciidse
+varfact_r[2] <- varfact
+source('Rcode/hwp9a.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+acc_rate[3] <- accrate
+seiid[3] <- funciidse
+varfact_r[3] <- varfact
+source('Rcode/hwp9a.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+acc_rate[4] <- accrate
+seiid[4] <- funciidse
+varfact_r[4] <- varfact
+source('Rcode/hwp9a.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+acc_rate[5] <- accrate
+seiid[5] <- funciidse
+varfact_r[5] <- varfact
+meanse <- data.frame(estimation,acc_rate,seiid,varfact_r,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+
+\begin{figure}[H]
+  \centering
+<<p9aplot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+plot(fnlist[(B+1):(B+M)],type='l')
+@
+		\caption{function values of Random-Walk Metropolis algorithm after burning-in}
+\end{figure}
+(b) With a Metropolis-within-Gibbs algorithm.
+Using a Metropolis-within-Gibbs algorithem, we can safely increase $\sigma$. Source code:
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp9b.R')
+@
+<<hwp9b,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+acc_rate <-numeric(5)
+estimation <- numeric(5)
+seiid <- numeric(5)
+varfact_r <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp9b.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+acc_rate[1] <- accrate
+seiid[1] <- funciidse
+varfact_r[1] <- varfact
+source('Rcode/hwp9b.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+acc_rate[2] <- accrate
+seiid[2] <- funciidse
+varfact_r[2] <- varfact
+source('Rcode/hwp9b.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+acc_rate[3] <- accrate
+seiid[3] <- funciidse
+varfact_r[3] <- varfact
+source('Rcode/hwp9b.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+acc_rate[4] <- accrate
+seiid[4] <- funciidse
+varfact_r[4] <- varfact
+source('Rcode/hwp9b.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+acc_rate[5] <- accrate
+seiid[5] <- funciidse
+varfact_r[5] <- varfact
+meanse <- data.frame(estimation,acc_rate,seiid,varfact_r,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+\begin{figure}[H]
+  \centering
+<<p9bplot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+plot(fnlist[(B+1):(B+M)],type='l')
+@
+		\caption{function values of Metropolis-within-Gibbs algorithm after burning-in}
+\end{figure}
+(c) With a Gibbs sampler.\\
+For Gibbs sampler, we need to calculate the conditional distributions in closed form. \\
+Firstly, the joint distribution is given by 
+\begin{align*}
+f(V,W,\mu,\theta,Y) = &Ce^{-b_1/V}V^{-a_1-1}e^{-b_2/W}W^{-a_2-1}e^{-(\mu-a3)^2/2b_3}V^{-K/2}W^{-\frac{1}{2}KJ}\times\\
+                      &\exp\left[-\sum\limits_{i=1}^K(\theta_i-\mu)^2/2V - \sum\limits_{i=1}^K\sum\limits_{j=1}^J(Y_{ij}-\theta_i)^2/2W\right]\\
+                       = &Ce^{-a/V}V^{-a-1}e^{-a/W}W^{-a-1}e^{-(\mu-a)^2/2a}V^{-K/2}W^{-\frac{1}{2}KJ}\times\\
+                      &\exp\left[-\sum\limits_{i=1}^K(\theta_i-\mu)^2/2V - \sum\limits_{i=1}^K\sum\limits_{j=1}^J(Y_{ij}-\theta_i)^2/2W\right]
+\end{align*}
+where C is a normalizing constant, and $a=a_1=a_2=a_3=b_1=b_2=b_3$. \\
+Now, we can write the following conditional distributions:
+\begin{align*}
+f(\mu|V,W,\theta) &= C\exp\left[-\frac{(\mu-a)^2}{2a}-\sum\limits_{i=1}^K\frac{(\theta_i-\mu)^2}{2V}\right]\\
+    &= C\exp\left[-\mu^2\left(\frac{1}{2a}+\frac{K}{2V}\right)+\mu\left(1+\sum\limits_{i=1}^K\frac{\theta_i}{V}\right)\right]\\
+\end{align*}
+If we let $\mu|*$ to follow a $N(m,v)$ distribution for some $m$ and $v$, and match the coefficients to get
+$$v=\left(\frac{1}{2a}+\frac{K}{2V}\right)^{-1}\bigg/2 = \left(\frac{1}{a}+\frac{K}{V}\right)^{-1}$$
+$$m=\left(1+\sum\limits_{i=1}^K\frac{\theta_i}{V}\right)\left(\frac{1}{a}+\frac{K}{V}\right)^{-1}$$
+Therefore, we have 
+$$(\mu|V,W,\theta)\sim N\left(\left(1+\sum\limits_{i=1}^K\frac{\theta_i}{V}\right)\left(\frac{1}{a}+\frac{K}{V}\right)^{-1},\left(\frac{1}{a}+\frac{K}{V}\right)^{-1}\right)$$
+\begin{align*}
+f(V|\mu,W,\theta) &= Ce^{-a/V}V^{-a-1}V^{-K/2}\exp\left(-\sum\limits_{i=1}^K\frac{(\theta_i-\mu)^2}{2V}\right)\\
+  &=CV^{-a-1-K/2}\exp\left(-\frac{1}{V}\left[a+\sum\limits_{i=1}^K\frac{(\theta_i-\mu)^2}{2}\right]\right)
+\end{align*}
+Notice that this is the pdf of a Inverse Gamma distribution with parameters $\alpha = a + K/2$ and $\beta = a+\sum_{i=1}^K(\theta_i-\mu)^2/2$, i.e. we have 
+$$(V|\mu,W,\theta)\sim IG\left(a+\frac{K}{2}, a+\sum\limits_{i=1}^K\frac{(\theta_i-\mu)^2}{2}\right)$$
+Similarly, 
+\begin{align*}
+f(W|\mu,V,\theta) &= Ce^{-a/W}W^{-a-1}W^{-KJ/2}\exp\left(-\frac{1}{W}\sum\limits_{i=1}^K\sum\limits_{j=1}^J\frac{(Y_{ij}-\theta_i)^2}{2}\right)\\
+  &=CW^{-a-1-KJ/2}\exp\left(-\frac{1}{W}\left[a+\sum\limits_{i=1}^K\sum\limits_{j=1}^J\frac{(Y_{ij}-\theta_i)^2}{2}\right]\right)
+  \end{align*}
+Again, this is the pdf of Inverse Gamma distribution with parameters $\alpha = a+KJ/2$ and $\beta=a+\sum_{i=1}^K\sum_{j=1}^J(Y_{ij}-\theta_i)^2/2$. i.e.
+$$(W|\mu,V,\theta)\sim IG\left(a+KJ/2,a+\sum\limits_{i=1}^K\sum\limits_{j=1}^J\frac{(Y_{ij}-\theta_i)^2}{2}\right)$$
+Lastly, 
+\begin{align*}
+f(\theta_i|\mu,V,W) &= C\exp\left(-\frac{(\theta_i-\mu)^2}{2V}-\sum\limits_{j=1}^J\frac{(Y_{ij}-\theta_i)^2}{2W}\right)\\
+  &=C\exp\left(-\theta_i^2\left(\frac{1}{2V}+\frac{J}{2W}\right)+\theta_i\left(\frac{\mu}{V}+\sum\limits_{j=1}^J\frac{Y_{ij}}{W}\right)\right)
+\end{align*}
+If we let $\mu|*$ to follow a $N(m,v)$ distribution for some $m$ and $v$, and match the coefficients to get
+$$v = \left(\frac{1}{2V}+\frac{J}{2W}\right)^{-1}\bigg/ 2 = \left(\frac{1}{V}+\frac{J}{W}\right)^{-1}$$
+$$m = \left(\frac{\mu}{V} + \sum\limits_{j=1}^J\frac{Y_{ij}}{W}\right)\left(\frac{1}{V}+\frac{J}{W}\right)^{-1}$$
+i.e. we have 
+$$(\theta_i|\mu,V,W)\sim N\left(\left(\frac{\mu}{V} + \sum\limits_{j=1}^J\frac{Y_{ij}}{W}\right)\left(\frac{1}{V}+\frac{J}{W}\right)^{-1},\left(\frac{1}{V}+\frac{J}{W}\right)^{-1}\right)$$
+Finally, using the closed form conditional distribution above, we can implement the Gibbs sampler as follows:
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp9c.R')
+@
+<<hwp9c,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+estimation <- numeric(5)
+seiid <- numeric(5)
+varfact_r <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp9c.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+seiid[1] <- funciidse
+varfact_r[1] <- varfact
+source('Rcode/hwp9c.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+seiid[2] <- funciidse
+varfact_r[2] <- varfact
+source('Rcode/hwp9c.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+seiid[3] <- funciidse
+varfact_r[3] <- varfact
+source('Rcode/hwp9c.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+seiid[4] <- funciidse
+varfact_r[4] <- varfact
+source('Rcode/hwp9c.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+seiid[5] <- funciidse
+varfact_r[5] <- varfact
+meanse <- data.frame(estimation,seiid,varfact_r,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+\begin{figure}[H]
+  \centering
+<<p9cplot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+plot(fnlist[(B+1):(B+M)],type='l')
+@
+		\caption{function values of Gibbs sampler after burning-in}
+\end{figure}
+(d) In terms of performance, the Gibbs sampler performs the best among the three as it requires the least amount of burning-in. The random-walk Metropolis requires 2e+6 steps just to burn-in to consistently generates non-trending function values (The function estimates tend to decrease over time if not burnt-in properly). This is quite a waste of computation power. The Metropolis-within-Gibbs requires similar number of steps to burn-in. On the contrary, the Gibbs sampler algorithm requires less than 1e+5 cycles to burn-in, which is magnitudes less than the required burning-in cycles for the other two algorithms. \\
+The Gibbs sampler algorithm also performs better in terms of standard error since they produce low varfact values, meaning that the samples generated from the Gibbs sampler algorithm are close to i.i.d. samples. \\
+However, the Gibbs sampler requires us to compute the conditional distribution in closed form, which may be very tedious and often impossible. The other two algorithms do not require analytic computation (choosing conjugate priors), hence they are much more easily implemented. \\
+The Metropolis-within-Gibbs algorithm converges faster when comparing with the random-walk Metropolis algorithm. This is because the RWM proposes points that differs in all dimensions and will cause a higher chance of rejection.\\
+Despite all these disadvantages, there are some advantages to the Random-Walk Metropolis algorithm. For example, if the distribution is defined on two regions that are disconnected in more than one dimension, then the Gibbs-like algorithms will not be able to travel from one region to the other. 

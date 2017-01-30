@@ -1,0 +1,77 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp7.R')
+@
+Consider an independence sampler algorithm on $\chi=(1,\infty)$, where $\pi(x)=5x^{-6}$ and $q(x)=rx^{-r-1}$ for some choice of $r>0$, with identity functional $h(x)=x$. \\
+(a) For what value of $r$ will the algorithm provide i.i.d. samples?\\
+The algorithm provide i.i.d. samples for $r=5$, because when $r=5$, $\pi(x)=q(x)$. This will eliminate any rejections in the independence sampler, so the sample will be i.i.d.\\\
+(b) For what values of $r$ will the sampler be geometrically ergodic?\\
+Independence sampler is geometrically ergodic if and only if there is $\delta>0$ such that $q(x)\ge \delta\pi(x)$ for $\pi$-a.e. $x\in \chi$.
+With $\chi=(1,\infty)$, we need to be able to pick $\delta>0$ so that 
+$$\sup_{x\ge 1}\frac{\pi(x)}{q(x)}=\le \frac{1}{\delta}$$
+This means that for any finite $x>1$, we require
+$$\frac{pi(x)}{q(x)}=\frac{5x^{-6}}{rx^{-r-1}}=\frac{5}{r}x^{r-5}<\infty$$
+So we require $r-5\le 0$, i.e. $r\le 5$. Also since $q(x)=rx^{-r-1}$ is a valid density function, we require $r>0$. Therefore, $r\in(0,5]$.\\
+(c) For $r=1/20$, find a number $n$ such that $D(x,n)<0.01$ for all $x\in\chi$.\\
+For $r=1/20$, 
+$$\frac{\pi(x)}{q(x)}=\frac{5}{\frac{1}{20}}x^{\frac{1}{20}-5}=100x^{-0.99}$$
+Therefore, for $x\in\chi=(1,\infty)$, $$\frac{\pi(x)}{q(x)}\le 100$$
+so we can pick $\delta=\frac{1}{100}$. Now, as $$D(x,n)\le(1-\delta)^n$$ we can simply choose $n$ such that $(1-\delta)^n<0.01$, so $n>\log(0.01)/\log(0.99)=458.21$. Therefore, $n=459$ will suffice. \\
+(d) Write and run a computer program to estimate $\mathbb{E}_\pi(h)$ with this algorithm in the two cases $r=1/20$ and $r=10$, each with $M=10^5$ and $B=10^4$. Estimate the corresponding standard errors by two different methods: (i) using "varfact", and (ii) from repeated independent runs.\\
+First, in order to sample from $q(x)$, we notice that if $U~$Uniform(0,1), 
+$$P((1-U)^{-\frac{1}{r}\le x}) = P(1-U\ge x^{-r}) = P(U\le 1-x^{-r}) = P(U\le F(x)) = F(x)$$
+Therefore, $X=_d(1-U)^{-\frac{1}{r}}$.\\
+Then we can implement the independence sampler with the following code:\\
+<<hwp7,eval=FALSE>>=
+@
+with $r=1/20$, the output of running the program is printed below:
+<<echo=FALSE>>=
+r=1/20
+@
+<<hwp7,echo=FALSE>>=
+@
+<<echo=FALSE>>=
+meanse1 = meanse
+@
+
+
+with $r=10$, the output of running the program is printed below:
+<<echo=FALSE>>=
+r=10
+@
+<<hwp7,echo=FALSE>>=
+@
+<<echo=FALSE>>=
+meanse2 = meanse
+@
+
+For ease of reading the result, we tabulate the result in the following two tables\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse1)
+@
+for r=1/20
+\end{center}
+mean of estimate = \Sexpr{mean(meanse1$funcmean)}\\
+mean of estimate standard error = \Sexpr{mean(meanse1$funcse)}\\
+standard deviation calculated from multiple runs = \Sexpr{sd(meanse1$funcse)}\\
+mean of acceptance rate = \Sexpr{mean(meanse1$accrate)}\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse2)
+@
+for r=10
+\end{center}
+mean of estimate = \Sexpr{mean(meanse2$funcmean)}\\
+mean of estimate standard error = \Sexpr{mean(meanse2$funcse)}\\
+standard deviation calculated from multiple runs = \Sexpr{sd(meanse2$funcse)}\\
+mean of acceptance rate = \Sexpr{mean(meanse2$accrate)}\\
+(e) First notice that the standard error calculated from varfact and i.i.d standard error is slightly larger than the standard error calculated from multiple runs in both cases. Also notice that the two estimates are quite close to each other, and the standar errors are also quite similar in the cases where $r=1/20$ and $r=10$. This result is quite surprising because the acceptance rate for the two cases are completely different. For $r=1/20$, the acceptance rate is just over 0.02, where as the acceptance rate is about 0.73 for the $r=10$ case.\\
+Also, for $r=1/20$ the sampler is geometrially ergodic and should be more reliable, at least to the extend that we know the Central Limit Theorem will hold for sure.\\
+Finally, we can analytically calculate the mean and standard deviation 
+\begin{align*}
+\mathbb{E}_\pi h &= \int_1^\infty 5x^{-5}dx = -\frac{5}{4}x^{-4}\bigg|^\infty_1 = \frac{5}{4}\\
+\mathbb{E}_\pi h^2 &= \int_1^\infty 5x^{-4}dx = -\frac{5}{3}x^{-3}\bigg|^\infty_1 = \frac{5}{3}\\
+\sigma &= \sqrt{\frac{5}{3}-\left(\frac{5}{4}\right)^2}=0.3227\\
+\frac{\sigma}{\sqrt{M}} &\approx 0.001
+\end{align*}
+Both 95\% confidence intervals contain the exacty value. 

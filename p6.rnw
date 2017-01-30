@@ -1,0 +1,66 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp6.R')
+@
+Write and run a computer program to estimate $\mathbb{E}_\pi[(X_1-X_2)/(1+X_3+X_4X_5)]$ using an MCMC algorithm of your choice, and obtain the best estimate you can. Include some discussion of accuracy, uncertainty, standard errors, etc.\\
+
+For this problem, we will use a Random Walk Metropolis algorithm to estimate the expectation. The increments in the random walk follow a $N(0,\sigma^2 I)$ distribution, where we will set the parameter $\sigma=0.2$ (by trial and error to minimize se).\\
+
+Source code:
+<<hwp6,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+acc_rate <-numeric(5)
+estimation <- numeric(5)
+seiid <- numeric(5)
+varfact_r <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp6.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+acc_rate[1] <- accrate
+seiid[1] <- funciidse
+varfact_r[1] <- varfact
+source('Rcode/hwp6.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+acc_rate[2] <- accrate
+seiid[2] <- funciidse
+varfact_r[2] <- varfact
+source('Rcode/hwp6.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+acc_rate[3] <- accrate
+seiid[3] <- funciidse
+varfact_r[3] <- varfact
+source('Rcode/hwp6.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+acc_rate[4] <- accrate
+seiid[4] <- funciidse
+varfact_r[4] <- varfact
+source('Rcode/hwp6.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+acc_rate[5] <- accrate
+seiid[5] <- funciidse
+varfact_r[5] <- varfact
+meanse <- data.frame(estimation,acc_rate,seiid,varfact,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+From the table above, we can first notice that the estimated result is consistent with the previous samplers, but the range of the estimation is slightly larger here using the MCMC sampler, while the standard error is smaller in this case. Also, we see that the acceptance rate is about 17\%, and is close the the optimal 23\%. To verify that the MCMC sampler works effectively, we plot the value of the estimated function after the burn-in stage
+\begin{figure}[H]
+  \centering
+<<p6plot, dev.args=list(pointsize=8),fig.width=6, fig.height=5>>=
+fnlist6 = fnlist
+plot(fnlist6[(B+1):(B+M)],type='l')
+@
+		\caption{function values of MCMC algorithm after burning-in}
+\end{figure}
+
+From the figure above, we can see that the sample is reasonably well represented (at least the value of the function itself varies significantly around its mean value), indicating a good (accurate) approximation by the MCMC algorithm.

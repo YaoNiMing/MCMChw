@@ -1,0 +1,51 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp5.R')
+@
+Write and run a computer program to estimate $\mathbb{E}_\pi[(X_1-X_2)/(1+X_3+X_4X_5)]$ by using a rejection sampler with the above $f$. Discuss the extent to which this algorithm works well.\\
+
+First let $(x1,x2,x3,x4,x5)$ be denoted as $x$. In order to use the rejection sampler, we have to find a constant $K$ such that $g(x)\le Kf(x)$, so we need to find the maximum value of $g$ in the box $(0,2)^5$. The maximum value is found by using \textsf{optim} in R:
+<<hwp5optim,eval=FALSE>>=
+@
+Notice that \textsf{optim} finds the minimum instead of maximum value, so we have to define \textsf{goptim} as the negative of function $g(x)$.
+The result of running the code above gives:
+<<hwp5optim,echo=FALSE>>=
+@
+Since $f(x)=\frac{1}{32}$ is constant in $(0,2)^5$, we need to set $K\ge 32*\max(g)=$1.718e+15, and since $K$ does not need to be tight bound, we pick $K=$2e+15 for easier computation. Now we can proceed to estimate the expectation $\mathbb{E}_\pi[(X_1-X_2)/(1+X_3+X_4X_5)]$ by using a rejection sampler with $f$. Note that we adjust the number of samples taken from $f$ to 1e+7 this time because the low acceptance rate. We have to increase the number of samples in order to have enough samples for the $\pi$ distribution.\\
+Source code:
+<<hwp5,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+estimation <- numeric(5)
+standard_error <- numeric(5)
+acc_rate <- numeric(5)
+source('Rcode/hwp5.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+acc_rate[1] <- accrate
+source('Rcode/hwp5.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+acc_rate[2] <- accrate
+source('Rcode/hwp5.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+acc_rate[3] <- accrate
+source('Rcode/hwp5.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+acc_rate[4] <- accrate
+source('Rcode/hwp5.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+acc_rate[5] <- accrate
+meanse <- data.frame(estimation,standard_error)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+The estimated value for $\mathbb{E}_\pi[(X_1-X_2)/(1+X_3+X_4X_5)]$ is \Sexpr{round(mean(meanse$estimation),3)} with standard error of approximately \Sexpr{round(mean(meanse$standard_error),5)}. The results from the five runs are quite consistent.\\
+However, since the acceptance rate is so low (about \Sexpr{mean(acc_rate)}), the algorithm is not as effective as the importance sampler in Problem 4. The computation time is a lot longer and standard error of the result is also larger than the importance sampler in Problem 4. 

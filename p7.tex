@@ -1,0 +1,285 @@
+
+Consider an independence sampler algorithm on $\chi=(1,\infty)$, where $\pi(x)=5x^{-6}$ and $q(x)=rx^{-r-1}$ for some choice of $r>0$, with identity functional $h(x)=x$. \\
+(a) For what value of $r$ will the algorithm provide i.i.d. samples?\\
+The algorithm provide i.i.d. samples for $r=5$, because when $r=5$, $\pi(x)=q(x)$. This will eliminate any rejections in the independence sampler, so the sample will be i.i.d.\\\
+(b) For what values of $r$ will the sampler be geometrically ergodic?\\
+Independence sampler is geometrically ergodic if and only if there is $\delta>0$ such that $q(x)\ge \delta\pi(x)$ for $\pi$-a.e. $x\in \chi$.
+With $\chi=(1,\infty)$, we need to be able to pick $\delta>0$ so that 
+$$\sup_{x\ge 1}\frac{\pi(x)}{q(x)}=\le \frac{1}{\delta}$$
+This means that for any finite $x>1$, we require
+$$\frac{pi(x)}{q(x)}=\frac{5x^{-6}}{rx^{-r-1}}=\frac{5}{r}x^{r-5}<\infty$$
+So we require $r-5\le 0$, i.e. $r\le 5$. Also since $q(x)=rx^{-r-1}$ is a valid density function, we require $r>0$. Therefore, $r\in(0,5]$.\\
+(c) For $r=1/20$, find a number $n$ such that $D(x,n)<0.01$ for all $x\in\chi$.\\
+For $r=1/20$, 
+$$\frac{\pi(x)}{q(x)}=\frac{5}{\frac{1}{20}}x^{\frac{1}{20}-5}=100x^{-0.99}$$
+Therefore, for $x\in\chi=(1,\infty)$, $$\frac{\pi(x)}{q(x)}\le 100$$
+so we can pick $\delta=\frac{1}{100}$. Now, as $$D(x,n)\le(1-\delta)^n$$ we can simply choose $n$ such that $(1-\delta)^n<0.01$, so $n>\log(0.01)/\log(0.99)=458.21$. Therefore, $n=459$ will suffice. \\
+(d) Write and run a computer program to estimate $\mathbb{E}_\pi(h)$ with this algorithm in the two cases $r=1/20$ and $r=10$, each with $M=10^5$ and $B=10^4$. Estimate the corresponding standard errors by two different methods: (i) using "varfact", and (ii) from repeated independent runs.\\
+First, in order to sample from $q(x)$, we notice that if $U~$Uniform(0,1), 
+$$P((1-U)^{-\frac{1}{r}\le x}) = P(1-U\ge x^{-r}) = P(U\le 1-x^{-r}) = P(U\le F(x)) = F(x)$$
+Therefore, $X=_d(1-U)^{-\frac{1}{r}}$.\\
+Then we can implement the independence sampler with the following code:\\
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Estimate E_pi(x) where pi=5x^-6 independence sampler algorithm}
+\hlcom{# with proposal distribution q(x) = r x^\{-r-1\}}
+
+\hlstd{h} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{x\}}
+\hlstd{g} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}\hlnum{5}\hlopt{*}\hlstd{x}\hlopt{^}\hlstd{(}\hlopt{-}\hlnum{6}\hlstd{)\}}
+\hlstd{q} \hlkwb{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,}\hlkwc{r}\hlstd{) \{r}\hlopt{*}\hlstd{x}\hlopt{^}\hlstd{(}\hlopt{-}\hlstd{r}\hlopt{-}\hlnum{1}\hlstd{)\}}
+
+\hlstd{runs} \hlkwb{=} \hlnum{10}
+
+\hlstd{M} \hlkwb{=} \hlnum{1e+5}
+\hlstd{B} \hlkwb{=} \hlnum{1e+4}
+
+\hlstd{funcmean} \hlkwb{=} \hlkwd{numeric}\hlstd{(runs)}
+\hlstd{funciidse} \hlkwb{=} \hlkwd{numeric}\hlstd{(runs)}
+\hlstd{varfact} \hlkwb{=} \hlkwd{numeric}\hlstd{(runs)}
+\hlstd{funcse} \hlkwb{=} \hlkwd{numeric}\hlstd{(runs)}
+\hlstd{accrate} \hlkwb{=} \hlkwd{numeric}\hlstd{(runs)}
+
+\hlkwd{cat}\hlstd{(}\hlstr{'B = '}\hlstd{,B,}\hlstr{', M = '}\hlstd{,M,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlkwa{for} \hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlstd{runs) \{}
+  \hlstd{acc} \hlkwb{=} \hlnum{0}
+  \hlstd{fnlist} \hlkwb{=} \hlkwd{numeric}\hlstd{(M}\hlopt{+}\hlstd{B)}
+  \hlstd{x} \hlkwb{=} \hlstd{(}\hlnum{1}\hlopt{-}\hlkwd{runif}\hlstd{(}\hlnum{1}\hlstd{))}\hlopt{^}\hlstd{(}\hlopt{-}\hlnum{1}\hlopt{/}\hlstd{r)}
+  \hlkwa{for} \hlstd{(j} \hlkwa{in} \hlnum{1}\hlopt{:}\hlstd{(B}\hlopt{+}\hlstd{M)) \{}
+    \hlstd{y} \hlkwb{=} \hlstd{(}\hlnum{1}\hlopt{-}\hlkwd{runif}\hlstd{(}\hlnum{1}\hlstd{))}\hlopt{^}\hlstd{(}\hlopt{-}\hlnum{1}\hlopt{/}\hlstd{r)}
+    \hlkwa{if} \hlstd{(}\hlkwd{runif}\hlstd{(}\hlnum{1}\hlstd{)}\hlopt{<=}\hlkwd{g}\hlstd{(y)}\hlopt{*}\hlkwd{q}\hlstd{(x,r)}\hlopt{/}\hlkwd{g}\hlstd{(x)}\hlopt{/}\hlkwd{q}\hlstd{(y,r)) \{}
+      \hlstd{acc} \hlkwb{=} \hlstd{acc}\hlopt{+}\hlnum{1}
+      \hlstd{x} \hlkwb{=} \hlstd{y}
+    \hlstd{\}}
+    \hlstd{fnlist[j]} \hlkwb{=} \hlkwd{h}\hlstd{(x)}
+  \hlstd{\}}
+
+  \hlstd{funcmean[i]} \hlkwb{=} \hlkwd{mean}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)])}
+  \hlstd{funciidse[i]} \hlkwb{=} \hlkwd{sd}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)])}\hlopt{/}\hlkwd{sqrt}\hlstd{(M)}
+  \hlstd{acf_k} \hlkwb{=} \hlkwd{acf}\hlstd{(fnlist[(B}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlstd{(M}\hlopt{+}\hlstd{B)],}\hlkwc{lag.max} \hlstd{=} \hlnum{1000}\hlstd{,}\hlkwc{plot} \hlstd{=} \hlnum{FALSE}\hlstd{)}\hlopt{$}\hlstd{acf}
+  \hlstd{varfact[i]} \hlkwb{=} \hlnum{2}\hlopt{*}\hlkwd{sum}\hlstd{(acf_k)}\hlopt{-}\hlnum{1}
+  \hlstd{funcse[i]} \hlkwb{=} \hlstd{funciidse[i]}\hlopt{*}\hlkwd{sqrt}\hlstd{(varfact[i])}
+  \hlstd{accrate[i]} \hlkwb{=} \hlstd{acc}\hlopt{/}\hlstd{M}
+
+  \hlkwd{cat}\hlstd{(}\hlstr{'Number of samples accepted = '}\hlstd{,acc,}\hlstr{', acceptance rate = '}\hlstd{,accrate[i],}\hlstr{'\textbackslash{}n'}\hlstd{)}
+  \hlkwd{cat}\hlstd{(}\hlstr{'Estimate = '}\hlstd{,funcmean[i],}\hlstr{'\textbackslash{}n'}\hlstd{)}
+  \hlkwd{cat}\hlstd{(}\hlstr{'i.i.d. standard error = '}\hlstd{,funciidse[i],}\hlstr{'\textbackslash{}n'}\hlstd{)}
+  \hlkwd{cat}\hlstd{(}\hlstr{'varfact = '}\hlstd{,varfact[i],}\hlstr{'\textbackslash{}n'}\hlstd{)}
+  \hlkwd{cat}\hlstd{(}\hlstr{'Standard error = '}\hlstd{,funcse[i],}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\hlstd{\}}
+\hlstd{meanse} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(funcmean,funciidse,varfact,funcse,accrate)}
+\hlstd{estse} \hlkwb{=} \hlkwd{sd}\hlstd{(funcmean)}
+\hlkwd{cat}\hlstd{(}\hlstr{'Standard error calculated from multiple runs = '}\hlstd{,estse,}\hlstr{'\textbackslash{}n'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+with $r=1/20$, the output of running the program is printed below:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+## B =  10000 , M =  1e+05
+## Number of samples accepted =  2093 , acceptance rate =  0.02093 
+## Estimate =  1.238635 
+## i.i.d. standard error =  0.0009258633 
+## varfact =  114.0854 
+## Standard error =  0.009889218 
+## Number of samples accepted =  2180 , acceptance rate =  0.0218 
+## Estimate =  1.237005 
+## i.i.d. standard error =  0.0009949706 
+## varfact =  72.25659 
+## Standard error =  0.008457635 
+## Number of samples accepted =  2203 , acceptance rate =  0.02203 
+## Estimate =  1.243761 
+## i.i.d. standard error =  0.0009788405 
+## varfact =  91.95337 
+## Standard error =  0.009386328 
+## Number of samples accepted =  2205 , acceptance rate =  0.02205 
+## Estimate =  1.26803 
+## i.i.d. standard error =  0.001196367 
+## varfact =  114.8249 
+## Standard error =  0.01281984 
+## Number of samples accepted =  2239 , acceptance rate =  0.02239 
+## Estimate =  1.26214 
+## i.i.d. standard error =  0.001043855 
+## varfact =  132.7526 
+## Standard error =  0.01202712 
+## Number of samples accepted =  2237 , acceptance rate =  0.02237 
+## Estimate =  1.240768 
+## i.i.d. standard error =  0.0009611 
+## varfact =  65.51433 
+## Standard error =  0.007779232 
+## Number of samples accepted =  2167 , acceptance rate =  0.02167 
+## Estimate =  1.259207 
+## i.i.d. standard error =  0.001016062 
+## varfact =  108.19 
+## Standard error =  0.01056851 
+## Number of samples accepted =  2188 , acceptance rate =  0.02188 
+## Estimate =  1.250411 
+## i.i.d. standard error =  0.001161109 
+## varfact =  89.67467 
+## Standard error =  0.01099532 
+## Number of samples accepted =  2165 , acceptance rate =  0.02165 
+## Estimate =  1.25477 
+## i.i.d. standard error =  0.001067317 
+## varfact =  103.8663 
+## Standard error =  0.01087754 
+## Number of samples accepted =  2212 , acceptance rate =  0.02212 
+## Estimate =  1.252788 
+## i.i.d. standard error =  0.001087062 
+## varfact =  108.7818 
+## Standard error =  0.01133789
+## Standard error calculated from multiple runs =  0.01056452
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+with $r=10$, the output of running the program is printed below:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+## B =  10000 , M =  1e+05
+## Number of samples accepted =  73929 , acceptance rate =  0.73929 
+## Estimate =  1.24135 
+## i.i.d. standard error =  0.0009011254 
+## varfact =  46.05885 
+## Standard error =  0.006115638 
+## Number of samples accepted =  74109 , acceptance rate =  0.74109 
+## Estimate =  1.227835 
+## i.i.d. standard error =  0.0007831439 
+## varfact =  20.71352 
+## Standard error =  0.003564253 
+## Number of samples accepted =  73333 , acceptance rate =  0.73333 
+## Estimate =  1.245432 
+## i.i.d. standard error =  0.000920215 
+## varfact =  101.153 
+## Standard error =  0.009255046 
+## Number of samples accepted =  74465 , acceptance rate =  0.74465 
+## Estimate =  1.233405 
+## i.i.d. standard error =  0.0008525449 
+## varfact =  42.70032 
+## Standard error =  0.005570996 
+## Number of samples accepted =  73682 , acceptance rate =  0.73682 
+## Estimate =  1.24653 
+## i.i.d. standard error =  0.0009628246 
+## varfact =  124.5792 
+## Standard error =  0.01074657 
+## Number of samples accepted =  73657 , acceptance rate =  0.73657 
+## Estimate =  1.239802 
+## i.i.d. standard error =  0.0009025768 
+## varfact =  124.087 
+## Standard error =  0.0100542 
+## Number of samples accepted =  73517 , acceptance rate =  0.73517 
+## Estimate =  1.244985 
+## i.i.d. standard error =  0.0009591974 
+## varfact =  177.6196 
+## Standard error =  0.01278361 
+## Number of samples accepted =  73592 , acceptance rate =  0.73592 
+## Estimate =  1.246485 
+## i.i.d. standard error =  0.0009477594 
+## varfact =  51.65175 
+## Standard error =  0.006811466 
+## Number of samples accepted =  73218 , acceptance rate =  0.73218 
+## Estimate =  1.247764 
+## i.i.d. standard error =  0.0009336237 
+## varfact =  37.46121 
+## Standard error =  0.005714297 
+## Number of samples accepted =  73434 , acceptance rate =  0.73434 
+## Estimate =  1.24259 
+## i.i.d. standard error =  0.0008906098 
+## varfact =  60.98202 
+## Standard error =  0.00695486
+## Standard error calculated from multiple runs =  0.00643962
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+For ease of reading the result, we tabulate the result in the following two tables\\
+\begin{center}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{tabular}{r|r|r|r|r}
+\hline
+funcmean & funciidse & varfact & funcse & accrate\\
+\hline
+1.238635 & 0.0009259 & 114.08541 & 0.0098892 & 0.02093\\
+\hline
+1.237005 & 0.0009950 & 72.25659 & 0.0084576 & 0.02180\\
+\hline
+1.243761 & 0.0009788 & 91.95337 & 0.0093863 & 0.02203\\
+\hline
+1.268030 & 0.0011964 & 114.82491 & 0.0128198 & 0.02205\\
+\hline
+1.262140 & 0.0010439 & 132.75263 & 0.0120271 & 0.02239\\
+\hline
+1.240768 & 0.0009611 & 65.51433 & 0.0077792 & 0.02237\\
+\hline
+1.259207 & 0.0010161 & 108.18999 & 0.0105685 & 0.02167\\
+\hline
+1.250411 & 0.0011611 & 89.67467 & 0.0109953 & 0.02188\\
+\hline
+1.254770 & 0.0010673 & 103.86630 & 0.0108775 & 0.02165\\
+\hline
+1.252789 & 0.0010871 & 108.78176 & 0.0113379 & 0.02212\\
+\hline
+\end{tabular}
+
+
+\end{knitrout}
+for r=1/20
+\end{center}
+mean of estimate = 1.2507516\\
+mean of estimate standard error = 0.0104139\\
+standard deviation calculated from multiple runs = 0.0015607\\
+mean of acceptance rate = 0.021889\\
+\begin{center}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{tabular}{r|r|r|r|r}
+\hline
+funcmean & funciidse & varfact & funcse & accrate\\
+\hline
+1.241350 & 0.0009011 & 46.05885 & 0.0061156 & 0.73929\\
+\hline
+1.227835 & 0.0007831 & 20.71352 & 0.0035643 & 0.74109\\
+\hline
+1.245432 & 0.0009202 & 101.15297 & 0.0092550 & 0.73333\\
+\hline
+1.233405 & 0.0008525 & 42.70032 & 0.0055710 & 0.74465\\
+\hline
+1.246530 & 0.0009628 & 124.57925 & 0.0107466 & 0.73682\\
+\hline
+1.239802 & 0.0009026 & 124.08702 & 0.0100542 & 0.73657\\
+\hline
+1.244985 & 0.0009592 & 177.61965 & 0.0127836 & 0.73517\\
+\hline
+1.246485 & 0.0009478 & 51.65175 & 0.0068115 & 0.73592\\
+\hline
+1.247764 & 0.0009336 & 37.46121 & 0.0057143 & 0.73218\\
+\hline
+1.242590 & 0.0008906 & 60.98202 & 0.0069549 & 0.73434\\
+\hline
+\end{tabular}
+
+
+\end{knitrout}
+for r=10
+\end{center}
+mean of estimate = 1.2416177\\
+mean of estimate standard error = 0.0077571\\
+standard deviation calculated from multiple runs = 0.002838\\
+mean of acceptance rate = 0.736936\\
+(e) First notice that the standard error calculated from varfact and i.i.d standard error is slightly larger than the standard error calculated from multiple runs in both cases. Also notice that the two estimates are quite close to each other, and the standar errors are also quite similar in the cases where $r=1/20$ and $r=10$. This result is quite surprising because the acceptance rate for the two cases are completely different. For $r=1/20$, the acceptance rate is just over 0.02, where as the acceptance rate is about 0.73 for the $r=10$ case.\\
+Also, for $r=1/20$ the sampler is geometrially ergodic and should be more reliable, at least to the extend that we know the Central Limit Theorem will hold for sure.\\
+Finally, we can analytically calculate the mean and standard deviation 
+\begin{align*}
+\mathbb{E}_\pi h &= \int_1^\infty 5x^{-5}dx = -\frac{5}{4}x^{-4}\bigg|^\infty_1 = \frac{5}{4}\\
+\mathbb{E}_\pi h^2 &= \int_1^\infty 5x^{-4}dx = -\frac{5}{3}x^{-3}\bigg|^\infty_1 = \frac{5}{3}\\
+\sigma &= \sqrt{\frac{5}{3}-\left(\frac{5}{4}\right)^2}=0.3227\\
+\frac{\sigma}{\sqrt{M}} &\approx 0.001
+\end{align*}
+Both 95\% confidence intervals contain the exacty value. 

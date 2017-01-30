@@ -1,0 +1,97 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/minproj/bondvalue.R')
+@
+
+\subsection{Term Structure of Interest Rates}
+According to definition on INVESTOPEDIA, "the term structure of interest rates is the relationship between interest rates or bond yields and different terms or maturities. The term structure of interest rates is also known as a yield curve and it plays central role in an economy. The term structure reflects expectations of market participants about future changes in interest rates and their assessment of monetory policy conditions"\\
+In mathematical finance, the term structure of interest rates is often modeled using stochastic methods, which can pose a number of difficult problems for estimation. One of the most crucial problems is that the parameters enter the state space in a highly nonlinear fasion. However, solving these non-linear systems are often quite rewarding as we can derive bonds and their derivatives prices from the models, yet, most of the time, we can only use MCMC methods to help solving the system.
+\subsection{Vasicek's Model With Jumps}
+The Vasicek's model assumes that the instantaneous spot rate is a Gaussian diffusion:
+\begin{align*}
+  dr_t &= \kappa_r(\theta_r-r_t)dt+\sigma_rdW_t^r\\
+  dr_t &= (a_r+b_r r_t)dt+\sigma_rdW_t^r
+\end{align*}
+where $W_t^r$ is a Brownian motion under the objective measure, $P$, and we will work with the $(a_r,b_r)$ parameterization of the drift. \\
+Baz and Das (1996) consider an extension of Vasicek's model to incorporate jumps in the short rate:
+$$dr_t=(a_r-b_rr_{t-})dt +\sigma_r dW_t^r + d\left(\sum\limits_{j=1}^{N_t}\xi_{\tau_j}\right)$$
+where we assume that $N_t$ is a Poisson process with constant intensity $\lambda$ and the jumps sizes are i.i.d. normal $\xi_{\tau_j}\sim N(\mu_J,\sigma_J^2)$. To value bonds under this model, we assume that the market price of interest rate risk is $\lambda_t=\lambda_r\sqrt{r_t}$  and if we assume the diffusive risk premium is constant, that $N_t^Q$ is a Poisson process under $Q$ with constant intensity $\lambda^Q$ and that the jump sizes are normally distributed under $Q$, $\xi_{\tau_j}^Q\sim N\left(\mu_j^Q,(\sigma_J^2)^Q\right)$, the evolution of the spot rate under $Q$ is then
+$$dr_t = \kappa_r(\theta_r^Q-r_t)dt+\sigma_rdW_t^r(Q)+d\left(\sum\limits_{j=1}^{N_t^Q}\xi_{\tau_j}^Q\right)$$
+where $W_t^r(Q)$ is a standard Brownian motion under the equivalent martingale measure $Q$. Then under this model, Using Feyman Kac's theorem, the price a non-defaultable zero coupon bond is given by
+$$P(r_t,\tau)=E_t^Q\left[e^{-\int_t^{t+\tau}r_sds}\right]$$
+\subsection{Monte Carlo Simulation and Integration Implementation}
+In this mini-project, we assume the following parameter values 
+\begin{align*}
+  \tau &= 10\\
+  \theta_r^Q &= 0.04\\
+  r_t &= 0.015\\
+  \kappa_r &= 0.6\\
+  \sigma_r &= 0.03\\
+  \lambda^Q &= 2\\
+  \mu_J^Q &= 0\\
+  (\sigma_J^2)^Q &= 0.01
+\end{align*}
+For small $h$, at any instance $t$, the distribution of $r_{t+h}$ given $r_t$ follows 
+$$f(r_{t+h}|r_t) \sim N(r_t+\kappa_r(\theta_r^Q-r_t)h,(\sigma_r^2)^Q\sqrt{h}+Bernuolli(\lambda^Qh)*N\left(\mu_J^Q,(\sigma_J^2)^Q\right)$$
+Using the distribution above, we simulate $M=2000$ paths and use Monte Carlo integration techiniques to calculate the price of zero-coupon bond. Ten runs are executed to investigate the consistency of the estimate.\\
+Source code:\\
+<<bondvalue,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+estprice <-numeric(10)
+estse <- numeric(10)
+source('Rcode/minproj/bondvalue.R')
+estprice[1] <- price
+estse[1] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[2] <- price
+estse[2] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[3] <- price
+estse[3] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[4] <- price
+estse[4] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[5] <- price
+estse[5] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[6] <- price
+estse[6] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[7] <- price
+estse[7] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[8] <- price
+estse[8] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[9] <- price
+estse[9] <- se
+source('Rcode/minproj/bondvalue.R')
+estprice[10] <- price
+estse[10] <- se
+meanse <- data.frame(estprice,estse)
+@
+The tabulated result is as follows:\\
+\begin{center}
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+\end{center}
+From the table above, we can see that the estimated price is fairly consistent with a mean of \Sexpr{mean(estprice)}. The standard error of the price is also relatively small, the mean of the estimated standard error is \Sexpr{mean(estse)}. The standard error calculated from multiple runs of executing the program is \Sexpr{sd(estprice)}. The small standar error of the estimated price means our MC estimation is reasonably accurate. \\
+There are several advantages to this approach.\\
+First of all, since there are multiple sources of stochasticity in our model (namely, the diffusive brownian motion, the number of jumps and the size jumps), solving the system analytically is (almost) impossible. In order to find a reasonable bond price under this model, we have to use MC simulation method.\\
+Also, since we have simulated paths of realizations of the spot rate, we can also find out how risky the bond is. That is, if we invest the same amount in the bank account and follow the simulated spot rate paths, how much more or less we are going to make in comparison to investing in the zero-coupon bond. \\
+Last but not least, we can look at some sample paths of the spot rate curve to see if our model assumption is valid. The following figure outlines 20 sample paths from our simulation
+\begin{figure}[H]
+  \centering
+<<p10plot, dev.args=list(pointsize=8),fig.width=6, fig.height=5,echo=FALSE>>=
+plot(seq(0,T,h),plotX[1,],type='l',ylim=c(-0.06,0.12),xlab='t',ylab='r')
+for (j in 2:20)
+  lines(seq(0,T,h),plotX[j,])
+@
+		\caption{20 simulated paths of the spot rate under risk neutral measure}
+\end{figure}
+From the figure above, we observe that the simulated paths follow typical strucure of actual observed spot rate curves. This validates to some extent that our model assumption is valid. 
+\subsection{Further Research}
+The original plan was actually to work on more advanced Monte Carlo method to estimate zero-coupon bond prices under this model assumption. However, the paper I was reading on this subject was quite intense, and I did not fully understand the methods described in the paper (and marking midterm papers for other courses is taking way longer than I have expected). In the paper, the financial parameters are not assumed to be known in advance, and the only given data in the implementation is the actual observed bond prices with different maturity. The spot rates and the parameters are assumed to follow a complicated joint distribution, so metroplis (or other sampling algorithms) have to be used to obtain the term structure curves. Here is the link to the referenced paper (\url{https://www0.gsb.columbia.edu/mygsb/faculty/research/pubfiles/564/MCMC.pdf})

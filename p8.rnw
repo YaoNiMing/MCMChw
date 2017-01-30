@@ -1,0 +1,14 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp8a.R')
+@
+(b) With a Langevin (Metropolis-Hastings) algorithm with proposals $Y_n$~$N(X_{n-1}+\frac{1}{2}\sigma^2g'(X_{n-1})/g(X_{n-1}),\sigma^2)$.
+First we calculate analycically $g'(x)$:
+\begin{align*}\frac{dg}{dx} &= \begin{cases}
+\frac{d}{dx}\left(e^{-x/10}(1+\cos(x)\sin(x^3))) &\text{for }x>0\\
+\frac{d}{dx}\left(e^{x/10}(1+\cos(x)\sin(x^3))) &\text{for }x<0
+\end{cases}\\
+&=\begin{cases}
+-\frac{1}{10}e^{-x/10}(1+\cos(x)\sin(x^3))+e^{-x/10}(3x^2\cos(x)\cos(x^3)-\sin(x)\sin(x^3)) &\text{for }x>0\\
+\frac{1}{10}e^{x/10}(1+\cos(x)\sin(x^3))+e^{x/10}(3x^2\cos(x)\cos(x^3)-\sin(x)\sin(x^3)) &\text{for }x<0
+\end{cases}
+\end{align*}

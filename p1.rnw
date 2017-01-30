@@ -1,0 +1,34 @@
+<<echo=FALSE>>=
+knitr::read_chunk('Rcode/hwp1.R')
+@
+Write and run a computer program to compute a Monte Carlo (including standard errors) of $\mathbb{E}((Y+Z)/(1+|Z|))$, where $Y~$ Exponential(3) and $Z~$ Normal(0,1) are independent.\\
+Source code:\\
+<<hwp1,eval=FALSE>>=
+@
+Output of several runs:
+<<echo=FALSE>>=
+estimation <- numeric(5)
+standard_error <- numeric(5)
+source('Rcode/hwp1.R')
+estimation[1] <- funcmean
+standard_error[1] <- funcse
+source('Rcode/hwp1.R')
+estimation[2] <- funcmean
+standard_error[2] <- funcse
+source('Rcode/hwp1.R')
+estimation[3] <- funcmean
+standard_error[3] <- funcse
+source('Rcode/hwp1.R')
+estimation[4] <- funcmean
+standard_error[4] <- funcse
+source('Rcode/hwp1.R')
+estimation[5] <- funcmean
+standard_error[5] <- funcse
+meanse <- data.frame(estimation,standard_error)
+@
+The tabulated result is as follows:\\
+\center
+<<echo=FALSE>>=
+knitr::kable(meanse)
+@
+The estimated value for $\mathbb{E}((Y+Z)/(1+|Z|))$ is \Sexpr{round(mean(meanse$estimation),3)} with standard error of approximately \Sexpr{round(mean(meanse$standard_error),5)}. The results from the five runs are quite consistent. The number of samples taken for the estimation is set to be $10^6$, as this number gives consistent results with reasonable computation power (runs within 1 second). 
